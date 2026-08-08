@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Camera, Bug, ArrowLeft, Calendar, Save, Plus } from "lucide-react";
+import { Camera, Bug, ArrowLeft, Calendar, Save, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export default function BeetleEditPage() {
@@ -48,6 +48,12 @@ export default function BeetleEditPage() {
     const updatedHistory = [{ date: today, text: newLogText }, ...history];
     setHistory(updatedHistory);
     setNewLogText('');
+  };
+
+  // タイムラインの特定の履歴を削除する関数
+  const handleDeleteLog = (indexToDelete: number) => {
+    const updatedHistory = history.filter((_, index) => index !== indexToDelete);
+    setHistory(updatedHistory);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -132,10 +138,19 @@ export default function BeetleEditPage() {
 
           <div className="space-y-3 border-l-2 border-[#2d4424] ml-2 pl-4 pt-2">
             {history.map((log, index) => (
-              <div key={index} className="relative">
-                <div className="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-[#82b366] border-2 border-[#142011]"></div>
-                <p className="text-[10px] text-[#8fa888]">{log.date}</p>
-                <p className="text-sm font-semibold text-[#f0f7ef]">{log.text}</p>
+              <div key={index} className="relative flex justify-between items-start bg-[#0a1108] p-3 rounded-xl border border-[#1e3318]">
+                <div className="absolute -left-[25px] top-4 w-3 h-3 rounded-full bg-[#82b366] border-2 border-[#142011]"></div>
+                <div>
+                  <p className="text-[10px] text-[#8fa888]">{log.date}</p>
+                  <p className="text-sm font-semibold text-[#f0f7ef] mt-0.5">{log.text}</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => handleDeleteLog(index)}
+                  className="text-red-400 hover:text-red-300 p-1 text-xs flex items-center gap-1 bg-[#201010] border border-[#442424] rounded-lg px-2"
+                >
+                  <Trash2 size={14} /> 削除
+                </button>
               </div>
             ))}
           </div>
