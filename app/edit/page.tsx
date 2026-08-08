@@ -1,4 +1,3 @@
-// app/edit/page.tsx
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -62,6 +61,19 @@ function EditContent() {
       setLogWeight('');
       setLogText('');
       alert('タイムラインに記録を追加しました！');
+    }
+  };
+
+  // タイムラインの特定の1行を削除する関数
+  const deleteLog = async (indexToDelete: number) => {
+    if (!confirm('この記録を削除しますか？')) return;
+    const updatedHistory = beetle.history.filter((_: any, i: number) => i !== indexToDelete);
+    
+    const { error } = await supabase.from('beetles').update({ history: updatedHistory }).eq('id', id);
+    if (error) {
+      alert('削除失敗: ' + error.message);
+    } else {
+      setBeetle({ ...beetle, history: updatedHistory });
     }
   };
 
@@ -135,8 +147,14 @@ function EditContent() {
         <h2 className="text-sm font-bold text-[#d4ebd0]">成長タイムライン・履歴</h2>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {beetle.history?.map((h: any, i: number) => (
-            <div key={i} className="border-b border-[#2d4424] pb-2 text-sm text-[#8fa888]">
-              <span className="text-[#82b366] mr-2 font-bold">{h.date}</span><span>{h.text}</span>
+            <div key={i} className="flex items-center justify-between border-b border-[#2d4424] pb-2 text-sm text-[#8fa888]">
+              <div>
+                <span className="text-[#82b366] mr-2 font-bold">{h.date}</span>
+                <span>{h.text}</span>
+              </div>
+              <button type="button" onClick={() => deleteLog(i)} className="text-red-400 hover:text-red-300 p-1">
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
         </div>
