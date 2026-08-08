@@ -35,9 +35,8 @@ export default function Home() {
             <div key={beetle.id} className="bg-[#142011] border border-[#2d4424] rounded-3xl p-6 shadow-xl">
               <div className="flex justify-between items-start mb-4">
                 <p className="text-[10px] text-[#5f7d56] font-mono">ID: {beetle.id.slice(0, 8)}...</p>
-                <Link href={`/beetle-edit?id=${beetle.id}`} className="text-xs text-[#82b366] hover:text-[#d4ebd0] font-bold underline">
-                  編集する
-                </Link>
+                // 編集ボタンのリンク部分
+<Link href={`/edit?id=${beetle.id}`} className="text-xs text-[#8fa888]">編集する</Link>
               </div>
               
               <div className="w-full h-48 bg-[#0a1108] rounded-xl overflow-hidden flex items-center justify-center border border-[#1e3318] mb-4">
