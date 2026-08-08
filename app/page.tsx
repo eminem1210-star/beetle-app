@@ -23,7 +23,7 @@ export default function Home() {
           <h1 className="text-2xl font-extrabold text-[#f0f7ef]">BEETLE MASTER'S GROVE</h1>
           <p className="text-xs text-[#8fa888]">SUPREME BREEDER MANAGEMENT SYSTEM</p>
         </div>
-        <Link href="/beetle-register" className="bg-[#436e32] hover:bg-[#5b8c43] text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg">
+        <Link href="/register" className="bg-[#436e32] hover:bg-[#5b8c43] text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg">
           <Plus size={18} /> 新規個体登録
         </Link>
       </header>
@@ -40,7 +40,6 @@ export default function Home() {
                 </Link>
               </div>
               
-              {/* 画像表示部分 */}
               <div className="w-full h-48 bg-[#0a1108] rounded-xl overflow-hidden flex items-center justify-center border border-[#1e3318] mb-4">
                 {beetle.image_url ? (
                   <img src={beetle.image_url} alt={beetle.name} className="w-full h-full object-cover" />

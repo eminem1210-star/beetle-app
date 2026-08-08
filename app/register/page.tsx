@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Camera, Bug, ArrowLeft, Calendar, Plus } from "lucide-react";
+import { Camera, Bug, ArrowLeft, Calendar } from "lucide-react";
 import Link from "next/link";
 
 export default function RegisterPage() {
@@ -10,8 +10,6 @@ export default function RegisterPage() {
   const [status, setStatus] = useState('幼虫');
   const [weight, setWeight] = useState('');
   const [imagePreview, setImagePreview] = useState('');
-  
-  // 初期タイムラインの入力用
   const [startDate, setStartDate] = useState(new Date().toLocaleDateString('ja-JP'));
   const [startLogText, setStartLogText] = useState('育成スタート');
 
@@ -31,7 +29,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // 初回登録時のタイムライン履歴を作成
     const initialHistory = [
       { date: startDate || '初期登録', text: startLogText || '育成スタート' }
     ];
@@ -66,7 +63,6 @@ export default function RegisterPage() {
           <p className="text-xs text-[#8fa888]">新しいカブト・クワガタの育成データを登録します</p>
         </header>
 
-        {/* 名前入力エリア */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424]">
           <label className="text-xs text-[#8fa888]">個体名 / 管理名</label>
           <input 
@@ -78,7 +74,6 @@ export default function RegisterPage() {
           />
         </div>
 
-        {/* 写真エリア */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] text-center">
           <div className="w-full aspect-square bg-[#0a1108] rounded-xl mb-4 overflow-hidden flex items-center justify-center border border-[#1e3318]">
             {imagePreview ? <img src={imagePreview} className="w-full h-full object-cover" /> : <Bug size={64} className="opacity-20 text-[#5f7d56]" />}
@@ -89,7 +84,6 @@ export default function RegisterPage() {
           </label>
         </div>
 
-        {/* ステータスエリア */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] space-y-4">
           <div>
             <label className="text-xs text-[#8fa888]">ステータス</label>
@@ -106,7 +100,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* 初期タイムライン（育成スタート時）設定エリア */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] space-y-4">
           <h2 className="text-sm font-bold flex items-center gap-2 text-[#d4ebd0]">
             <Calendar size={18} className="text-[#82b366]" /> 初回タイムライン設定
