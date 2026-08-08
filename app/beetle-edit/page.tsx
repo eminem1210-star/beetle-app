@@ -70,7 +70,6 @@ export default function EditPage() {
           <p className="text-xs text-[#8fa888]">育成データを編集・更新します</p>
         </header>
 
-        {/* 名前 */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424]">
           <label className="text-xs text-[#8fa888]">個体名 / 管理名</label>
           <input 
@@ -81,7 +80,6 @@ export default function EditPage() {
           />
         </div>
 
-        {/* 写真 */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] text-center">
           <div className="w-full aspect-square bg-[#0a1108] rounded-xl mb-4 overflow-hidden flex items-center justify-center border border-[#1e3318]">
             {beetle.image_url ? <img src={beetle.image_url} className="w-full h-full object-cover" /> : <Bug size={64} className="opacity-20 text-[#5f7d56]" />}
@@ -92,7 +90,6 @@ export default function EditPage() {
           </label>
         </div>
 
-        {/* ステータス・性別・体重 */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -117,7 +114,6 @@ export default function EditPage() {
           </div>
         </div>
 
-        {/* 血統・管理情報 */}
         <div className="bg-[#142011] p-5 rounded-2xl border border-[#2d4424] space-y-3">
           <h2 className="text-sm font-bold text-[#d4ebd0] flex items-center gap-2"><Info size={16}/> 血統・管理情報</h2>
           <input type="text" value={beetle.pedigree || ''} onChange={(e) => setBeetles({...beetle, pedigree: e.target.value})} placeholder="血統名" className="w-full bg-[#0a1108] border border-[#2d4424] p-3 rounded-lg text-sm text-[#e2e8df] outline-none" />
@@ -127,7 +123,6 @@ export default function EditPage() {
           </div>
         </div>
 
-        {/* 保存・削除ボタン */}
         <div className="flex gap-4">
           <button type="submit" className="flex-1 bg-[#82b366] hover:bg-[#93c47d] text-[#0d160b] py-4 rounded-xl font-extrabold text-lg flex items-center justify-center gap-2 shadow-lg">
             <Save size={18} /> 保存する
