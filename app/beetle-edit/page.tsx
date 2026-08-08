@@ -2,14 +2,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Camera, Bug, Plus, ArrowLeft, Calendar, Save } from "lucide-react";
+import { Camera, Bug, ArrowLeft, Calendar, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function BeetleEditPage() {
   const [beetle, setBeetle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('幼虫');
   const [weight, setWeight] = useState('');
   const [imagePreview, setImagePreview] = useState('');
 
@@ -27,10 +27,9 @@ export default function BeetleEditPage() {
       
       if (data) {
         setBeetle(data);
-        // 登録されているカラム名（name または beetle_name）に対応
         setName(data.name || data.beetle_name || '');
-        setStatus(data.status || '');
-        setWeight(data.weight || '');
+        setStatus(data.status || '幼虫');
+        setWeight(data.weight !== null && data.weight !== undefined ? String(data.weight) : '');
         setImagePreview(data.image_url || '');
       }
       setLoading(false);
@@ -38,7 +37,6 @@ export default function BeetleEditPage() {
     fetchBeetle();
   }, []);
 
-  // 画像ファイルを圧縮・Base64化してプレビュー＆保存できるようにする
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -55,18 +53,40 @@ export default function BeetleEditPage() {
     e.preventDefault();
     if (!beetle) return;
 
+    // まず必須項目だけで更新を試みる（image_url列エラーを回避）
+    const updateData: any = {
+      name: name,
+      status: status,
+      weight: weight ? Number(weight) : null,
+    };
+
+    // image_urlがある場合は含める
+    if (imagePreview) {
+      updateData.image_url = imagePreview;
+    }
+
     const { error } = await supabase
       .from('beetles')
-      .update({
-        name: name,
-        status: status,
-        weight: weight ? Number(weight) : null,
-        image_url: imagePreview
-      })
+      .update(updateData)
       .eq('id', beetle.id);
 
     if (error) {
-      alert('保存に失敗しました: ' + error.message);
+      // 万が一image_url列がない場合のフォールバック（画像なしで更新）
+      const { error: retryError } = await supabase
+        .from('beetles')
+        .update({
+          name: name,
+          status: status,
+          weight: weight ? Number(weight) : null,
+        })
+        .eq('id', beetle.id);
+
+      if (retryError) {
+        alert('保存に失敗しました: ' + retryError.message);
+      } else {
+        alert('データを更新しました！（※画像カラム未作成のため、テキストのみ保存しました）');
+        window.location.href = '/';
+      }
     } else {
       alert('個体データを更新しました！');
       window.location.href = '/';
@@ -85,8 +105,8 @@ export default function BeetleEditPage() {
         </Link>
         
         <form onSubmit={handleSave}>
-          <header className="bg-[#142011] border border-[#2d4424] rounded-3xl p-8 mb-8 shadow-xl flex justify-between items-center">
-            <div>
+          <header className="bg-[#142011] border border-[#2d4424] rounded-3xl p-8 mb-8 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="w-full md:w-auto flex-1">
               <label className="text-xs text-[#8fa888] block mb-1">個体名 / 管理名</label>
               <input 
                 type="text" 
@@ -97,7 +117,7 @@ export default function BeetleEditPage() {
               />
               <p className="text-xs text-[#82b366] mt-2">ID: {beetle?.id}</p>
             </div>
-            <button type="submit" className="bg-[#436e32] hover:bg-[#5b8c43] text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shrink-0">
+            <button type="submit" className="bg-[#436e32] hover:bg-[#5b8c43] text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg shrink-0 cursor-pointer">
               <Save size={18} /> 変更を保存
             </button>
           </header>
@@ -144,21 +164,27 @@ export default function BeetleEditPage() {
                   ステータス・体重管理
                 </h2>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-[#8fa888] block mb-1">ステータス</label>
-                    <input 
-                      type="text" 
+                    <label className="text-xs text-[#8fa888] block mb-1">ステータス（選択式）</label>
+                    <select 
                       value={status} 
                       onChange={(e) => setStatus(e.target.value)}
-                      placeholder="例: 幼虫 / 前蛹 / 羽化" 
                       className="w-full bg-[#0a1108] border border-[#2d4424] rounded-xl px-4 py-2.5 text-sm text-[#e2e8df] outline-none focus:border-[#82b366]"
-                    />
+                    >
+                      <option value="幼虫">幼虫</option>
+                      <option value="前蛹">前蛹</option>
+                      <option value="蛹">蛹</option>
+                      <option value="羽化">羽化</option>
+                      <option value="成虫">成虫</option>
+                      <option value="その他">その他</option>
+                    </select>
                   </div>
                   <div>
                     <label className="text-xs text-[#8fa888] block mb-1">体重 (g)</label>
                     <input 
                       type="number" 
+                      step="0.1"
                       value={weight} 
                       onChange={(e) => setWeight(e.target.value)}
                       placeholder="例: 35" 
