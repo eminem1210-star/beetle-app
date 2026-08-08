@@ -54,7 +54,7 @@ export default async function Home() {
                   ID: {beetle.id}
                 </span>
                 <Link 
-                  href={`/edit/${beetle.id}`}
+                  href={`/beetle-edit?id=${beetle.id}`}
                   className="text-xs bg-[#24381e] hover:bg-[#324f2b] text-[#b4d6a8] px-3 py-1.5 rounded-xl border border-[#3b5d2e] transition-colors"
                 >
                   編集する
