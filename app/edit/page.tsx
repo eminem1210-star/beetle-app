@@ -159,7 +159,7 @@ function EditContent() {
             <TrendingUp size={16} className="text-[#82b366]" /> 体重推移グラフ
           </h2>
           <div className="w-full h-48 bg-[#0a1108] p-3 rounded-xl border border-[#1e3318]">
-            <ResponsiveContainer width="100% " height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e3318" />
                 <XAxis dataKey="date" stroke="#8fa888" fontSize={10} />
