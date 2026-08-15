@@ -1,147 +1,214 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { Bug, Plus, Calendar, Activity, Weight, LogOut } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-export default function Dashboard() {
-  const [beetles, setBeetles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../lib/supabase';
+import Link from 'next/link';
+
+type Beetle = {
+  id: string;
+  name: string;
+  type: string;
+  gender: string;
+  status: string;
+  memo: string;
+  image_url: string;
+  created_at: string;
+};
+
+export default function Home() {
   const router = useRouter();
+  const [beetles, setBeetles] = useState<Beetle[]>([]);
+  const [loading, setLoading] = useState(true);
+  // チェックされた個体のIDを保存する配列
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    async function checkUserAndFetch() {
-      // 1. ログインしているかチェック
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login'); // ログインしていなければログイン画面へ
-        return;
-      }
+    fetchBeetles();
+  }, []);
 
-      // 2. ログイン中のユーザーのデータだけを取得
+  const fetchBeetles = async () => {
+    try {
       const { data, error } = await supabase
         .from('beetles')
         .select('*')
-        .eq('user_id', session.user.id)
-        .order('id', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (error) console.error(error);
-      else setBeetles(data || []);
+      if (error) throw error;
+      setBeetles(data || []);
+    } catch (error) {
+      console.error('データ取得エラー:', error);
+    } finally {
       setLoading(false);
     }
-    checkUserAndFetch();
-  }, [router]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0d160b] text-[#e2e8df] p-6 text-center">読み込み中...</div>;
+  // チェックボックスのオン/オフ切り替え
+  const handleToggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((item) => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  // 全選択 / 全解除
+  const handleSelectAll = () => {
+    if (selectedIds.length === beetles.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(beetles.map((b) => b.id));
+    }
+  };
+
+  // 選択した個体の一括削除
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`選択した ${selectedIds.length} 件の個体を削除してもよろしいですか？`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('beetles')
+        .delete()
+        .in('id', selectedIds);
+
+      if (error) throw error;
+      setSelectedIds([]);
+      fetchBeetles();
+    } catch (error) {
+      console.error('一括削除エラー:', error);
+      alert('削除に失敗しました。');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#0d160b] text-[#e2e8df] p-4 sm:p-6 pb-20 font-sans">
-      {/* ヘッダー */}
-      <header className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 pt-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-wider text-[#f0f7ef] text-center sm:text-left">BEETLE MASTER'S GROVE</h1>
-          <p className="text-xs text-[#8fa888] tracking-widest text-center sm:text-left">SUPREME BREEDER MANAGEMENT SYSTEM</p>
-        </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-center">
-          <Link href="/register" className="bg-[#436e32] hover:bg-[#5b8c43] text-white px-5 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 text-sm">
-            <Plus size={18} /> 新規個体登録
-          </Link>
-          <button onClick={handleLogout} className="bg-[#1f1212] hover:bg-[#331c1c] text-[#e88888] px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-1 border border-[#442222] transition-all text-sm">
-            <LogOut size={16} /> ログアウト
-          </button>
-        </div>
-      </header>
-
-      {/* アプリの説明セクション */}
-      <div className="max-w-5xl mx-auto bg-[#142011] p-5 rounded-2xl border border-[#2d4424] space-y-3 mb-6">
-        <h2 className="text-sm font-bold text-[#d4ebd0] flex items-center gap-2">
-          <span>💡</span> このアプリでできること
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-[#8fa888]">
-          <div className="bg-[#0a1108] p-3 rounded-xl border border-[#1e3318]">
-            <span className="text-[#82b366] font-bold block mb-1">📸 個体の一元管理</span>
-            写真、血統、累代、入手先、性別を個体ごとにまとめて綺麗に保存できます。
-          </div>
-          <div className="bg-[#0a1108] p-3 rounded-xl border border-[#1e3318]">
-            <span className="text-[#82b366] font-bold block mb-1">📈 成長のタイムライン</span>
-            日々のステータス変化や体重の推移を記録として残せます。
-          </div>
-          <div className="bg-[#0a1108] p-3 rounded-xl border border-[#1e3318]">
-            <span className="text-[#82b366] font-bold block mb-1">✏️ 簡単な更新・修正</span>
-            いつでもデータの編集や、間違えた記録の削除、写真の差し替えが可能です。
-          </div>
-        </div>
-      </div>
-
-      {/* 一覧セクション */}
+    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-sm font-bold text-[#8fa888] mb-4">育成個体一覧 ({beetles.length})</h2>
+        {/* ヘッダー部分 */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-amber-400 tracking-wider">
+              BEETLE MASTER'S GROVE
+            </h1>
+            <p className="text-sm text-slate-400 mt-1">
+              カブトムシ・クワガタ育成管理ダッシュボード
+            </p>
+          </div>
+          <Link
+            href="/new"
+            className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition transform hover:-translate-y-0.5"
+          >
+            + 新規個体を登録
+          </Link>
+        </div>
 
-        {beetles.length === 0 ? (
-          <div className="bg-[#142011] p-10 rounded-2xl border border-[#2d4424] text-center space-y-3">
-            <p className="text-sm text-[#8fa888]">登録されている個体がまだありません。</p>
-            <Link href="/register" className="inline-block bg-[#436e32] text-white px-4 py-2 rounded-xl text-xs font-bold">
-              最初の個体を登録する
+        {/* 一括操作バー（レ点選択用） */}
+        {!loading && beetles.length > 0 && (
+          <div className="flex items-center justify-between bg-slate-900 p-4 rounded-xl mb-6 border border-slate-800">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === beetles.length && beetles.length > 0}
+                onChange={handleSelectAll}
+                className="w-5 h-5 accent-amber-500 rounded cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-300">
+                すべて選択 ({selectedIds.length} / {beetles.length} 件選択中)
+              </span>
+            </div>
+            {selectedIds.length > 0 && (
+              <button
+                onClick={handleDeleteSelected}
+                className="px-4 py-1.5 bg-red-600 hover:bg-red-500 text-white text-sm font-bold rounded-lg transition"
+              >
+                選択した個体を削除
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ローディング表示 */}
+        {loading ? (
+          <div className="text-center py-20 text-slate-500">読み込み中...</div>
+        ) : beetles.length === 0 ? (
+          <div className="text-center py-20 bg-slate-900 rounded-2xl border border-slate-800">
+            <p className="text-slate-400 mb-4">登録されている個体がいません。</p>
+            <Link
+              href="/new"
+              className="text-amber-400 hover:underline font-semibold"
+            >
+              最初の個体を登録してみましょう
             </Link>
           </div>
         ) : (
+          /* メインのカード一覧画面（かっこいいダークUI） */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {beetles.map((beetle) => {
-              const lastLog = beetle.history && beetle.history.length > 0 ? beetle.history[beetle.history.length - 1] : null;
-
+              const isSelected = selectedIds.includes(beetle.id);
               return (
-                <div key={beetle.id} className="bg-[#142011] rounded-2xl border border-[#2d4424] overflow-hidden flex flex-col shadow-xl hover:border-[#436e32] transition-all">
-                  
-                  <div className="px-4 py-2.5 bg-[#0e170c] border-b border-[#2d4424] flex items-center justify-between text-xs text-[#8fa888]">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={12} className="text-[#82b366]" />
-                      {lastLog ? lastLog.date : '初期登録'}
-                    </span>
-                    <Link href={`/edit?id=${beetle.id}`} className="text-[#82b366] hover:underline font-bold">
-                      編集・詳細 →
-                    </Link>
+                <div
+                  key={beetle.id}
+                  className={`relative bg-slate-900 rounded-2xl overflow-hidden border transition shadow-xl flex flex-col ${
+                    isSelected ? 'border-amber-500 ring-2 ring-amber-500/50' : 'border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  {/* チェックボックス（カードの左上） */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(beetle.id)}
+                      className="w-6 h-6 accent-amber-500 rounded shadow-md cursor-pointer"
+                    />
                   </div>
 
-                  <div className="w-full aspect-square bg-[#0a1108] overflow-hidden flex items-center justify-center border-b border-[#2d4424]">
+                  {/* 画像表示エリア */}
+                  <div className="h-48 bg-slate-800 relative">
                     {beetle.image_url ? (
-                      <img src={beetle.image_url} alt={beetle.name} className="w-full h-full object-cover" />
+                      <img
+                        src={beetle.image_url}
+                        alt={beetle.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <Bug size={48} className="opacity-20 text-[#5f7d56]" />
+                      <div className="w-full h-full flex items-center justify-center text-slate-600 text-sm">
+                        画像なし
+                      </div>
                     )}
+                    <span className="absolute bottom-2 right-2 px-2.5 py-1 bg-slate-950/80 backdrop-blur text-xs font-semibold rounded-full text-amber-400 border border-slate-700">
+                      {beetle.status}
+                    </span>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  {/* 情報エリア */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-lg font-extrabold text-[#f0f7ef] truncate">{beetle.name}</h3>
-                      {beetle.pedigree && <p className="text-xs text-[#8fa888] truncate mt-0.5">血統: {beetle.pedigree}</p>}
-                    </div>
-
-                    <div className="bg-[#0a1108] p-2.5 rounded-xl border border-[#1e3318] space-y-1 text-xs">
-                      <div className="flex items-center justify-between text-[#d4ebd0]">
-                        <span className="flex items-center gap-1 text-[#8fa888]">
-                          <Activity size={12} className="text-[#82b366]" /> ステータス
-                        </span>
-                        <span className="font-bold bg-[#142011] px-2 py-0.5 rounded border border-[#2d4424] text-[#82b366]">
-                          {beetle.status || '幼虫'}
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="text-lg font-bold text-white truncate">
+                          {beetle.name}
+                        </h3>
+                        <span className="text-xs px-2 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">
+                          {beetle.gender}
                         </span>
                       </div>
-                      {beetle.weight && (
-                        <div className="flex items-center justify-between text-[#d4ebd0] pt-1 border-t border-[#1e3318]">
-                          <span className="flex items-center gap-1 text-[#8fa888]">
-                            <Weight size={12} className="text-[#82b366]" /> 体重
-                          </span>
-                          <span className="font-bold text-[#f0f7ef]">{beetle.weight} g</span>
-                        </div>
+                      <p className="text-xs text-amber-500/90 font-semibold mb-3">
+                        {beetle.type}
+                      </p>
+                      {beetle.memo && (
+                        <p className="text-sm text-slate-400 line-clamp-2 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/60 mb-4">
+                          {beetle.memo}
+                        </p>
                       )}
                     </div>
-                  </div>
 
+                    {/* 編集ボタン */}
+                    <Link
+                      href={`/edit?id=${beetle.id}`}
+                      className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-center text-xs font-bold text-slate-200 rounded-xl transition border border-slate-700"
+                    >
+                      詳細・編集
+                    </Link>
+                  </div>
                 </div>
               );
             })}
