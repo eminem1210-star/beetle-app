@@ -21,14 +21,11 @@ export default function Home() {
   const router = useRouter();
   const [beetles, setBeetles] = useState<Beetle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [filterType, setFilterType] = useState('すべて');
 
   useEffect(() => {
     checkUserAndFetchData();
   }, []);
 
-  // 1. ログインチェックとデータ取得
   const checkUserAndFetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -54,57 +51,13 @@ export default function Home() {
     }
   };
 
-  // ログアウト処理
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
 
-  // 一括選択の切り替え
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedIds(beetles.map((b) => b.id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleSelectOne = (id: string) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((item) => item !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-    }
-  };
-
-  // 一括削除処理
-  const handleDeleteSelected = async () => {
-    if (selectedIds.length === 0) return;
-    if (!confirm(`選択した ${selectedIds.length} 件の個体を削除してもよろしいですか？`)) return;
-
-    try {
-      const { error } = await supabase
-        .from('beetles')
-        .delete()
-        .in('id', selectedIds);
-
-      if (error) throw error;
-
-      setBeetles(beetles.filter((b) => !selectedIds.includes(b.id)));
-      setSelectedIds([]);
-    } catch (error) {
-      console.error('一括削除エラー:', error);
-      alert('削除に失敗しました。');
-    }
-  };
-
-  const filteredBeetles = beetles.filter((b) => {
-    if (filterType === 'すべて') return true;
-    return b.type === filterType;
-  });
-
   if (loading) {
-    return <div className="text-white text-center py-20 bg-slate-950 min-h-screen">認証確認中...</div>;
+    return <div className="text-white text-center py-20 bg-slate-950 min-h-screen">読み込み中...</div>;
   }
 
   return (
@@ -124,49 +77,20 @@ export default function Home() {
           </Link>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white font-bold rounded-lg text-sm transition shadow"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-sm transition shadow"
           >
             ログアウト
           </button>
         </div>
       </div>
 
-      {/* 一括操作バー */}
-      <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-6 flex justify-between items-center">
-        <label className="flex items-center gap-2 cursor-pointer text-sm">
-          <input
-            type="checkbox"
-            checked={beetles.length > 0 && selectedIds.length === beetles.length}
-            onChange={handleSelectAll}
-            className="w-4 h-4 rounded accent-amber-500"
-          />
-          すべて選択 ({selectedIds.length} / {beetles.length}件選択中)
-        </label>
-        {selectedIds.length > 0 && (
-          <button
-            onClick={handleDeleteSelected}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded transition"
-          >
-            選択した項目を一括削除
-          </button>
-        )}
-      </div>
-
       {/* 個体カード一覧 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {filteredBeetles.map((beetle) => (
+        {beetles.map((beetle) => (
           <div
             key={beetle.id}
-            className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-lg relative flex flex-col"
+            className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-lg flex flex-col"
           >
-            <div className="absolute top-3 left-3 z-10">
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(beetle.id)}
-                onChange={() => handleSelectOne(beetle.id)}
-                className="w-5 h-5 rounded accent-amber-500 cursor-pointer shadow"
-              />
-            </div>
             <div className="h-48 bg-slate-800 relative">
               {beetle.image_url ? (
                 <img src={beetle.image_url} alt={beetle.name} className="w-full h-full object-cover" />
