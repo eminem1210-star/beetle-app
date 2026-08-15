@@ -115,7 +115,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-amber-400">BEETLE MASTER'S GROVE</h1>
           <p className="text-xs text-slate-400">カブトムシ・クワガタ育成管理ダッシュボード</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           <Link
             href="/new"
             className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-sm transition"
@@ -124,7 +124,7 @@ export default function Home() {
           </Link>
           <button
             onClick={handleLogout}
-            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition"
+            className="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white font-bold rounded-lg text-sm transition shadow"
           >
             ログアウト
           </button>
