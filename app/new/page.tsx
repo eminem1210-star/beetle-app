@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
@@ -64,11 +64,12 @@ export default function NewBeetlePage() {
   const [type, setType] = useState('カブトムシ');
   const [gender, setGender] = useState('オス');
   const [status, setStatus] = useState('幼虫');
+  const [bloodline, setBloodline] = useState(''); // 血統
+  const [container, setContainer] = useState('800cc'); // ビン
   const [memo, setMemo] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 画像選択時に圧縮を実行する処理
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const originalFile = e.target.files[0];
@@ -77,7 +78,7 @@ export default function NewBeetlePage() {
         setFile(compressedFile);
       } catch (error) {
         console.error('画像の圧縮に失敗しました', error);
-        setFile(originalFile); // 失敗した場合は元のファイルを使用
+        setFile(originalFile);
       }
     }
   };
@@ -110,6 +111,8 @@ export default function NewBeetlePage() {
           type,
           gender,
           status,
+          bloodline,
+          container,
           memo,
           image_url: imageUrl,
         },
@@ -182,6 +185,34 @@ export default function NewBeetlePage() {
             <option value="前蛹">前蛹</option>
             <option value="蛹">蛹</option>
             <option value="成虫">成虫</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">血統・系統</label>
+          <input
+            type="text"
+            value={bloodline}
+            onChange={(e) => setBloodline(e.target.value)}
+            className="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white"
+            placeholder="例: 〇〇血統 / 〇〇ライン"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">使用ビン（容器）</label>
+          <select
+            value={container}
+            onChange={(e) => setContainer(e.target.value)}
+            className="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white"
+          >
+            <option value="800cc">800cc</option>
+            <option value="1100cc">1100cc</option>
+            <option value="1400cc">1400cc</option>
+            <option value="1500cc">1500cc</option>
+            <option value="2300cc">2300cc</option>
+            <option value="3000cc">3000cc以上</option>
+            <option value="other">その他・ケース</option>
           </select>
         </div>
 
